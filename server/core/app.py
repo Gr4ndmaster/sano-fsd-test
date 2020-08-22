@@ -43,6 +43,12 @@ CORS(app, supports_credentials=True)
 
 app.register_blueprint(auth_api)
 
+#  public api registered
+app.register_blueprint(public_api)
+
+#  user api registered
+app.register_blueprint(user_api)
+
 
 @app.after_request
 def refresh_authorization(response):

@@ -58,13 +58,20 @@
                             data-cy="password input"
                             placeholder="Password"
                             @keyup.enter="completeRegistration"
+                            @input="$v.password.$touch"
                         />
+                        <div v-if="$v.password.$dirty">
+                            <div v-if="!$v.password.required">Password field is required</div>
+                            <div v-else-if="!$v.password.minLength">Password field must have at least 7 characters</div>
+                            <div v-else-if="!$v.password.upperCase">Password field must have at least 1 Uppercase character</div>
+                        </div>
                         <div class="sano-text-input-focuser"></div>
                     </div>
                 </div>
 
                 <button
                     id="submit"
+                    :disabled="$v.$invalid"
                     style="opacity: 0.75"
                     class="sano-btn w-full border-white text-white bg-sano-red-orange"
                     data-cy="continue to site button"
@@ -94,6 +101,7 @@
 
 <script>
 import SvgSymbols from "@/layouts/SvgSymbols";
+import { minLength, required } from 'vuelidate/lib/validators'
 
 const touchMap = new WeakMap();
 
@@ -113,6 +121,18 @@ export default {
             standard_welcome_flow_study_keys: [],
         };
     },
+
+    validations: {
+        password: {
+            minLength: minLength(7),
+            required,
+            upperCase: function(value) {
+                const containsUppercase = /[A-Z]/.test(value)
+                return containsUppercase
+            }
+        }
+    },
+
     computed: {
         trimmed_reg_source() {
             let rs = this.registration_source;
@@ -146,22 +166,25 @@ export default {
     },
     methods: {
         completeRegistration() {
-            this.loading = true;
-            // eslint-disable-next-line global-require
-            const bcrypt = require("bcryptjs");
-            const salt = `$2a$10$KdtO7gxB1VPlolHaUBafasdf${this.email}`,
+            if(!this.$v.$invalid) {
+                this.loading = true;
+                // eslint-disable-next-line global-require
+    
+                const bcrypt = require("bcryptjs");
+                const salt = `$2a$10$KdtO7gxB1VPlolHaUBafasdf${this.email}`,
                 password_hash = bcrypt.hashSync(this.password, salt);
 
-            this.$api.auth
-                .complete_registration(this.$route.params.token, password_hash)
-                .then(() => {
-                    this.loading = false;
-                    this.$router.push({ name: "research" });
-                })
-                .catch(() => {
-                    this.$toast({ type: "error", title: "There was a problem with the password input." });
-                    this.loading = false;
-                });
+                this.$api.auth
+                    .complete_registration(this.$route.params.token, password_hash)
+                    .then(() => {
+                        this.loading = false;
+                        this.$router.push({ name: "research" });
+                    })
+                    .catch(() => {
+                        this.$toast({ type: "error", title: "There was a problem with the password input." });
+                        this.loading = false;
+                    });
+            }
         },
     },
 };

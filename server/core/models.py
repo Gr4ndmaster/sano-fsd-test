@@ -84,6 +84,10 @@ class Studies(BaseModel):
     description = CharField(1500, null=True)  # TBD what does null mean?
     researcher_email = CharField(100, default="")  # TBD shouldn't this be null instead of default "" if there is no researcher email specified? (will change this anyway)
 
+class StudiesUsers(BaseModel):
+    user = ForeignKeyField(Users, backref='studies_users')
+    study = ForeignKeyField(Studies, backref='studies_users')
+
 
 if os.getenv("TEST") == "True":
     db.evolve(interactive=False)

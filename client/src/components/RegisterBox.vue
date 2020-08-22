@@ -16,7 +16,12 @@
                     type="email"
                     spellcheck="false"
                     @keyup.enter="register"
+                    @input="$v.email.$touch"
                 />
+                <div v-if="$v.email.$dirty">
+                    <div v-if="!$v.email.required">Email field is required</div>
+                    <div v-if="!$v.email.email">Email field must use an email format</div>
+                </div>
                 <div class="sano-text-input-focuser"></div>
             </div>
 
@@ -27,6 +32,7 @@
                     style="opacity: 1"
                     class="sano-btn w-full border-white text-white bg-sano-red-orange"
                     data-cy="register button"
+                    :disabled="$v.$invalid"
                     @click="register"
                 >
                     Register
@@ -38,6 +44,7 @@
 
 <script>
 const touchMap = new WeakMap();
+import { email, required } from 'vuelidate/lib/validators'
 
 export default {
     name: "RegisterBox",
@@ -47,21 +54,31 @@ export default {
             loading: false,
         };
     },
+
+    validations: {
+        email: {
+            email,
+            required
+        }
+    },
+
     methods: {
         register() {
-            this.loading = true;
-            this.$api.auth
-                .register(this.email)
-                .then(() => {
-                    this.loading = false;
-                    this.$router.push({
-                        name: "register-thanks",
-                        params: { email: this.email },
+            if(!this.$v.$invalid) {
+                this.loading = true;
+                this.$api.auth
+                    .register(this.email)
+                    .then(() => {
+                        this.loading = false;
+                        this.$router.push({
+                            name: "register-thanks",
+                            params: { email: this.email },
+                        });
+                    })
+                    .catch(() => {
+                        this.loading = false;
                     });
-                })
-                .catch(() => {
-                    this.loading = false;
-                });
+            }
         },
     },
 };
