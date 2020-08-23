@@ -39,8 +39,6 @@ def get_user_studies(user_id, user_email):
         .join(Users)
         .where(Users.id == user_id))
 
-    print(query)
-
     items = [model_to_dict(study) for study in query]
     return jsonify(items)
 
@@ -50,21 +48,24 @@ def enroll(user_id, user_email):
     study_id = request.json["study_id"]
 
     if StudiesUsers.select().where(StudiesUsers.user_id == user_id).where(StudiesUsers.study_id == study_id):
-        return 'match'
+
+        return jsonify('Study already enrolled!'), 400
     else:
         StudiesUsers.create(user_id=user_id, study_id=study_id)
 
-        return jsonify({"study added successfully!"})
-    # return jsonify(model_to_dict(user))
-    return jsonify(study_id)
+        return jsonify({"study added successfully!"}), 200
 
 
 @user_api.route("/enroll/remove", methods=["POST"])
 @user_only
 def unenroll(user_id, user_email):
     study_id = request.json["study_id"]
-
     studies_users = StudiesUsers.select().where(StudiesUsers.user_id == user_id).where(StudiesUsers.study_id == study_id).first()
-    studies_users.delete_instance()
+    
+    if studies_users is not None:
+        studies_users.delete_instance()
 
-    return jsonify('successfully removed study'), 200
+        return jsonify('successfully removed study'), 200
+    else:
+
+        return jsonify('Study not enrolled!'), 400

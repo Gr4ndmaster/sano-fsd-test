@@ -15,3 +15,7 @@
 * Within the `server/` directory, run the server locally with `run/server`.
 * In a seperate terminal shell, inside the `client/` directory, download the client dependencies and run the client locally with `run/client`.
 * Navigate to http://0.0.0.0:2000 in your browser
+
+please find the link to my loom video bellow.
+
+https://www.loom.com/share/817ec99829bb42fd90cfd1ed92c58d15
